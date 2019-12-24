@@ -17,22 +17,6 @@ def getMarketDataRange(marketdata):
     print(minimum,maximum)
     return minimum, maximum
 
-def tweetTimes():
-    f = open('yang_tweets.json', 'r')
-    data = f.read()
-    data = json.loads(data)
-    minimum, maximum = getMarketDataRange(marketdata)
-    timestamps = []
-    for tweet in data:
-        # only add if in range of marketdata
-        t = int(tweet['timestamp_epochs'])
-        if t > minimum and t < maximum:
-            # correct for utc to current timezone
-            timestamps.append(int(tweet['timestamp_epochs']))
-    timestamps.sort()
-    return timestamps
-
-
 def dateToUnix(date):
     return time.mktime(datetime.strptime(date,'%m/%d/%Y').timetuple())
 
@@ -49,16 +33,32 @@ def addToDict(filename):
     data = json.loads(data)
     marketdata[int(filename)] = data
 
-def loadData(minimum=None, maximum=None):
+def loadData(tweets, minimum=None, maximum=None):
+    marketdata = dict()
     # populate marketdata dictionary
-    if not (minimum is None and maximum is None):
-        minimum = int(minimum)
-        maximum = int(maximum)
-    for filename in os.listdir(path):
+    for filename in os.listdir(marketDataPath):
         s = int(filename)
         if (minimum is None and maximum is None) or (s > minimum and s < maximum):
             addToDict(filename)
     #marketdata = {int(k) : v for k, v in marketdata.items()}
+
+    if not tweets:
+        return marketdata
+
+    # load tweet data
+    f = open(tweetDataPath, 'r')
+    data = f.read()
+    data = json.loads(data)
+    minimum, maximum = getMarketDataRange(marketdata)
+    tweetTimes = []
+    for tweet in data:
+        # only add if in range of marketdata
+        t = int(tweet['timestamp_epochs'])
+        if (minimum is None and maximum is None) or (t > minimum and t < maximum):
+            tweetTimes.append(int(tweet['timestamp_epochs']))
+    tweetTimes.sort()
+
+    return marketData, tweetTimes
 
 def risk(market):
     risk = 0
@@ -69,7 +69,7 @@ def risk(market):
     risk *= 100
     return risk
 
-def plot(marketdata, marketID, variable, tweets=True):
+def plot(marketdata, marketID, variable, tweets):
     # plot market with marketID
     marketPrices = dict()
     if len(marketdata) < 1:
@@ -131,7 +131,7 @@ def plot(marketdata, marketID, variable, tweets=True):
         plt.legend(bbox_to_anchor=(1.04,0), loc='lower left', ncol=1)
 
     if tweets:
-        times = tweetTimes()
+        times = tweetTimes
         for t in times:
             plt.axvline(x=t)
 #    plt.axvline(x=1577030956)
@@ -139,19 +139,53 @@ def plot(marketdata, marketID, variable, tweets=True):
     plt.show()
 
 def praseArgs():
+    # id
+    if '--id' in sys.argv:
+        marketID = sys.argv[sys.argv.index('--id') + 1]
+    else:
+        print('error: no market id specified')
+        sys.exit()
+
+    # marketdata
+    if '--marketdata' in sys.argv:
+        marketDataPath = sys.argv[sys.argv.index('--marketdata') + 1]
+        # add / to end of directory if not there
+        if marketDataPath[-1] != '/':
+            marketDataPath.append('/')
+    else:
+        marketDataPath = 'marketdata/'
+
+    # tweetdata
+    if '--tweetdata' in sys.argv:
+        tweetDataPath = sys.argv[sys.argv.index('--tweetdata') + 1]
+    else:
+        tweetDataPath = None
+
+    # plot-type
+    if '--plot-type' in sys.argv:
+        plotType = sys.argv[sys.argv.index('--plot-type') + 1]
+    else:
+        plotType = 'yes'
+
+    # epoch-range
+    if '--epoch-range' in sys.argv:
+        epochRange = sys.argv[sys.argv.index('--epoch-range') + 1].split('-')
+        epochRange = [int(x) for x in epochRange]
+    else:
+        epochRange = None
+
+    return marketID, marketDataPath, tweetDataPath, plotType, epochRange
 
 
-marketID = sys.argv[1]
-variable = sys.argv[2]
+marketID, marketDataPath, tweetDataPath, plotType, epochRange = parseArgs()
+tweets = not (tweetDataPath is None)
 marketdata = dict()
-path = 'marketdata/'
-numArgs = len(sys.argv) - 1
 
-if numArgs > 2:
-    loadData(dateToUnix(sys.argv[3]), dateToUnix(sys.argv[4]))
+if epochRange is not None:
+    loadData(tweets, epochRange[0], epochRange[1])
 else:
-    loadData()
+    loadData(tweets)
 
-plot(marketdata, marketID, variable)
+plot(marketdata, marketID, plotType,tweets)
 
 
