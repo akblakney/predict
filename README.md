@@ -8,11 +8,14 @@ Run with python3 plot.py <args>
 	-- `--plot-type yes` plots the yes prices for the market
 	-- `--plot-type no` plots the no prices for the market
 	-- `--plot-type risk` plots the risk for the market (scaled up to 100)
-- `--tweets` followed by a path to a JSON file containing tweet data may be specified to plot tweets over the original plot
+- `--marketdata` followed by a directory containing all marketdata
+- `--tweetdata` followed by a path to a JSON file containing tweet data may be specified to plot tweets over the original plot
+
+
 
 Example usage:
 
 ```
-python3 plot.py --id 5328 --plot-type yes -- tweets trump_tweets.json
+python3 plot.py --id 5328 --plot-type yes --marketdata marketdata/ --tweetdata trump_tweets.json
 ```
 
