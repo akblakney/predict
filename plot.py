@@ -27,8 +27,8 @@ def toReadableTime(unixtime):
     # may be in milliseconds, try `ts /= 1000` in that case
     return datetime.utcfromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
 
-def addToDict(filename):
-    f = open(path + filename, 'r')
+def addToDict(filename,marketdata):
+    f = open(marketDataPath + filename, 'r')
     data = f.read()
     data = json.loads(data)
     marketdata[int(filename)] = data
@@ -39,7 +39,7 @@ def loadData(tweets, minimum=None, maximum=None):
     for filename in os.listdir(marketDataPath):
         s = int(filename)
         if (minimum is None and maximum is None) or (s > minimum and s < maximum):
-            addToDict(filename)
+            addToDict(filename,marketdata)
     #marketdata = {int(k) : v for k, v in marketdata.items()}
 
     if not tweets:
@@ -58,7 +58,7 @@ def loadData(tweets, minimum=None, maximum=None):
             tweetTimes.append(int(tweet['timestamp_epochs']))
     tweetTimes.sort()
 
-    return marketData, tweetTimes
+    return marketdata, tweetTimes
 
 def risk(market):
     risk = 0
@@ -138,7 +138,7 @@ def plot(marketdata, marketID, variable, tweets):
 
     plt.show()
 
-def praseArgs():
+def parseArgs():
     # id
     if '--id' in sys.argv:
         marketID = sys.argv[sys.argv.index('--id') + 1]
@@ -179,12 +179,11 @@ def praseArgs():
 
 marketID, marketDataPath, tweetDataPath, plotType, epochRange = parseArgs()
 tweets = not (tweetDataPath is None)
-marketdata = dict()
 
 if epochRange is not None:
-    loadData(tweets, epochRange[0], epochRange[1])
+    marketdata, tweetTimes = loadData(tweets, epochRange[0], epochRange[1])
 else:
-    loadData(tweets)
+    marketdata, tweetTimes = loadData(tweets)
 
 plot(marketdata, marketID, plotType,tweets)
 
