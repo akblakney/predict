@@ -2,4 +2,7 @@ twitterscraper/*
 marketdata2.zip
 h
 marketdata/*
+twitterdata/*
 tweetdatacollect/*
+*.json
+*.zip
