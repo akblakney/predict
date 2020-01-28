@@ -1,4 +1,5 @@
 # for analyzing market data as time series
+from statsmodels.tsa.api import ExponentialSmoothing, SimpleExpSmoothing, Holt
 from statsmodels.tsa.api import VAR
 from statsmodels.tsa.stattools  import   grangercausalitytests
 from sklearn import preprocessing
@@ -11,6 +12,69 @@ from fbprophet import Prophet
 from fbprophet.plot import plot_plotly
 from plotly.offline import iplot
 import matplotlib.pyplot as plt
+
+def print_df(data):
+    with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
+        print(data)
+
+def smooth(data):
+    data[cName] = data[cName].diff()
+    data['tweet'] = data['tweet'].diff()
+    data = data[[cName, 'tweet']].dropna()
+    market = data[cName]
+    tweet = data['tweet']
+    fit_market = SimpleExpSmoothing(market).fit(smoothing_level=.2, optimized=False)
+    fit_tweet = SimpleExpSmoothing(tweet).fit(smoothing_level=.2, optimized=False)
+    fit_market.fittedvalues.plot(color='red')
+    fit_tweet.fittedvalues.plot(color='blue')
+    plt.show()
+#    fcast_market = fit_market.forecast(20)
+#    fcast_tweet = fit_market.forecast(20)
+
+def var_predict(data, pred_interval):
+    data2 = data[[cName,'tweet']]
+    model = VAR(data2[[cName,'tweet']])
+    results = model.fit(4)
+    model.select_order(8)
+    results = model.fit(maxlags=8, ic = 'aic')
+    if results.k_ar == 0:
+        results = model.fit(1)
+    lag_order = results.k_ar
+    print('lagorder',lag_order)
+    print('vals',data2.values)
+    print('vals indexed',data2.values[-lag_order:])
+    print('results',results.summary())
+    return results.forecast(data2.values[-lag_order:],pred_interval)
+
+
+def testing(data, pred_interval):
+    data[cName] = data[cName].diff()
+    data['tweet'] = data['tweet'].diff()
+    print('printing... before dsrop na')
+    print_df(data)
+    data = data.dropna()
+    print('printing... after dsrop na')
+    print_df(data)
+    index = pred_interval * 4
+    pred_values = [0 for _ in range(index)]
+    while index + pred_interval < len(data.index) - 1:
+        print('hh')
+        curr_pred_values = var_predict(data.head(index), pred_interval)
+        for val in curr_pred_values:
+            pred_values.append(val[0] * 100)
+        index += pred_interval
+
+    actual = list(data[cName])
+    print('data cname:', actual)
+    print('pred values: ', pred_values)
+
+    fig1 = plt.plot(actual,'b',label='actual')
+    fig1 = plt.plot(pred_values,'r',label='predicted')
+    plt.show()
+
+
+
+
 def loadMarketForTS(variable, marketDataPath, epochRange, marketID,cName):
     data = []
     setColumns = False
@@ -129,7 +193,8 @@ def prophetStuff():
 
 marketID, marketDataPath, tweetDataPath, plotType, epochRange = parseArgs()
 cName = '555 or more'
-#epochRange = [1577163600,15771755990]
+#cName = '484 or fewer'
+
 data = loadMarketForTS('yes',marketDataPath, epochRange,marketID, cName)
 tweets = loadTweetData(tweetDataPath, epochRange)
 data = addTweetsToDataFrame(tweets, data)
@@ -143,7 +208,9 @@ data[cName] = data[cName].astype(float)
 
 data = data.sort_values(by='ds')
 
-var_try(data)
+#var_try(data)
+#testing(data, 200)
+smooth(data)
 
 
 # plot data
