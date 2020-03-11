@@ -74,6 +74,37 @@ def inRange(t, epochRange):
     return t > epochRange[0] and t < epochRange[1]
 
 
+#def tweet2(tweetDataPath, epochRange):
+
+
+def tweetToPandas(tweetDataPath, epochRange, step):
+    # get sorted list of tweet times
+    tweetTimes = loadTweetData(tweetDataPath, epochRange)
+
+    # index
+    unix_times = np.zeros(len(list(range(epochRange[0],epochRange[1], step))))#(epochRange[1] - epochRange[0]) // step) + 1) #list(range(epochRange[0], epochRange[1], step=step))
+   
+    for time in tweetTimes:
+        # find correct bin
+        if not inRange(time, epochRange):
+            continue
+        index = (time - epochRange[0]) // step
+        unix_times[index] += 1
+
+    df = pd.DataFrame({
+        'date' : list(range(epochRange[0], epochRange[1], step)),
+        'counts' : unix_times
+    })
+    #df = df.set_index('unix_times')
+    #df['date'] = pd.to_datetime(df['unix_times'],unit='s')
+    df['date'] = pd.to_datetime(df['date'],unit='s')
+    df = df.set_index('date')
+    print(df)
+
+    return df
+
+    
+
 def loadTweetData(tweetDataPath,epochRange):
 
     # load tweet data
@@ -111,7 +142,6 @@ def loadMarketForPlot(variable,marketDataPath,epochRange,marketID):
             continue
         timex = data
         markets = timex['markets']
-        market = 'hi'
         found = False
         for m in markets:
             if str(m['id']) == str(marketID):

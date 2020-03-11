@@ -24,8 +24,8 @@ def save_marketdata( marketDataPath,epochRange,marketID, thin, filename):
 
   marketdata = pd.DataFrame(marketdata).transpose().sort_index()
   marketdata = thinDF(marketdata,thin)
-  marketdata.to_csv(filename,index=False)
+  marketdata.to_csv(filename)#,index=False)
+
 
 marketID, marketDataPath, tweetDataPath, plotType, epochRange, thin, filename = parseArgsLoc()
-
 save_marketdata(marketDataPath, epochRange,marketID, thin, filename)
