@@ -3,11 +3,6 @@ import json
 from datetime import datetime
 from time import mktime as mktime
 import sys
-import pandas as pd
-import numpy as np
-
-def thinDF(df, n):
-  return df[np.mod(np.arange(df.index.size),n) == 0]
 
 def parseArgs():
     # id
@@ -93,17 +88,12 @@ def loadTweetData(tweetDataPath,epochRange):
 
 def loadMarketForPlot(variable,marketDataPath,epochRange,marketID):
     marketdata = dict()
-    market = 'hi'
-    foundMarket = False
     for filename in os.listdir(marketDataPath):
-        #print('here')
         if not filename.isnumeric():
-          #print(filename)
+          print(filename)
           continue
         key = int(filename)
-        #print('key is ' + str(key))
         if inRange(key,epochRange):
-            #print('123')
             f = open(marketDataPath + filename, 'r')
             data = f.read()
             data = json.loads(data)
@@ -116,13 +106,11 @@ def loadMarketForPlot(variable,marketDataPath,epochRange,marketID):
         for m in markets:
             if str(m['id']) == str(marketID):
                 market = m
-                foundMarket = True
                 found = True
                 break
         if not found:
             print('couldnt find market with market id ' + marketID)
-#            break
-            continue
+            break
         contracts = market['contracts']
         prices = dict()
         for contract in contracts:
@@ -133,10 +121,6 @@ def loadMarketForPlot(variable,marketDataPath,epochRange,marketID):
             if variable == 'risk':
                 prices[contract['name']] = risk(market)
         marketdata[key] = prices
-    if not foundMarket:
-      print('couldnt find market')
-    #print(marketdata)
-    #print(market['name'])
     return marketdata, market['name']
 
 
