@@ -6,6 +6,10 @@ import sys
 import pandas as pd
 import numpy as np
 
+def cleanPrint(df):
+    with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
+        print(df)
+
 def thinDF(df, n):
   return df[np.mod(np.arange(df.index.size),n) == 0]
 

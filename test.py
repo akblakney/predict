@@ -1,16 +1,8 @@
-import json
+from bisect import bisect_left, bisect_right
+l = [2,8,9,12,15,20,25,96,100]
 
-f = open('tweets.json', 'r')
-data = f.read()
-data = json.loads(data)
+s = l.index(l[bisect_right(l,16)])
+e = l.index(l[bisect_left(l,18)])
 
-count = 0
-timestamps = []
-for tweet in data:
-    timestamps.append(int(tweet['timestamp_epochs']))
-
-timestamps.sort()
-for timestamp in timestamps:
-    print(timestamp)
-
-
+print(s)
+print(e)
