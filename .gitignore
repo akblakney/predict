@@ -5,6 +5,7 @@ marketdata/*
 newmarket/*
 twitterdata/*
 tweetdatacollect/*
+testing/*
 plots/*
 *.json
 *.zip
