@@ -51,9 +51,6 @@ def f(row, interval,tweetTimes):
   return end_index - start_index
 
 
-
-
-
 # add tweet data to df
 def add_tweets(tweetDataPath, df):
   tweetTimes = sorted(loadTweetData(tweetDataPath, epochRange))
