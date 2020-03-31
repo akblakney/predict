@@ -41,6 +41,13 @@ def tweets_to_bins(tweetDataPath, bin_len, start_index=0):
 
     return data
 
+def process_forecast(fcast,alpha=.05):
+    mean = fcast.predicted_mean
+    CI = fcast.conf_int(alpha=alpha)
+    low_ci = [CI[i][0] for i in range(len(CI))]
+    high_ci = [CI[i][1] for i in range(len(CI))]
+
+    return mean, low_ci, high_ci
 
 # returns p,q,P,Q with lowest AIC
 def grid_search():
@@ -69,13 +76,15 @@ def plot(data,label=''):
 def plot_forecast(data, mean, low_ci, high_ci, label=''):
     n = len(data)
     mean = np.concatenate((np.zeros(n), mean))
-    low_ci = np.concatenate((np.zeros(n), low_ci))
-    high_ci = np.concatenate((np.zeros(n), high_ci))
 
     plt.plot(data, label=label + 'data')
     plt.plot(mean, label=label + 'predicted mean')
-    plt.plot(low_ci, label=label + 'lower CI')
-    plt.plot(high_ci, label=label + 'high CI')
+    if low_ci is not None:
+        low_ci = np.concatenate((np.zeros(n), low_ci))
+        plt.plot(low_ci, label=label + 'lower CI')
+    if high_ci is not None:
+        high_ci = np.concatenate((np.zeros(n), high_ci))
+        plt.plot(high_ci, label=label + 'high CI')
 
 def plot_acf(data, label=''):
     sm.graphics.tsa.plot_acf(data, lags=14)
@@ -109,6 +118,25 @@ def seasonal_plot(data,label='',period=7):
     for i in range(len(days)):
         day = days[i]
         plt.plot(day,label=label+' day ' + str(i))
+
+def forecast_eval(data, test_index, predicted):
+    train_data = data[:test_index]
+    test_data = data[test_index:]
+
+    # compute MSE, MAE
+    mse = 0
+    mae = 0
+    n = len(predicted)
+    for i in range(n):
+        mse += (predicted[i] - test_data[i]) ** 2
+        mae += abs(predicted[i] - test_data[i])
+    mse /= n
+    mae /= n
+
+    # compute mean absolute error
+    mae = 0
+    for i in range
+    # 
 
 
 

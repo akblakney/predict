@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 from scipy.stats import norm
 import statsmodels.api as sm
-from statsmodels.tsa.api import ExponentialSmoothing, SimpleExpSmoothing, Holt
 import matplotlib.pyplot as plt
 from ts_util import tweets_to_bins, plot_acf, plot_forecast, plot, seasonal_plot, process_forecast
 
@@ -103,23 +102,13 @@ def positive_sarimax(data, steps, alpha,p,q,P,Q):
 
     return mean, low_ci, high_ci
 
-# returns mean, low, high ci for steps forward with simple expoenntial smoothing
-def ses(data, steps):
-    fit = SimpleExpSmoothing(data).fit()
-    fcast = fit.forecast(steps)#.rename(r'$\alpha=%s$'%fit3.model.params['smoothing_level'])
-
-    return fcast, None, None#process_forecast(fcast)
 
 n = len(data)
 train_data = data[:n - 10]
 test_data = data[n - 10:]
 
-mean, low, high = ses(data,10)
-plot_forecast(data, mean, low,high,label='ses')
 
-mean, low, high = sarimax(data,10,.05,p,q,P,Q)
-plot_forecast(data, mean, low,high,label='sarimax')
-#plot_acf(data)
+plot_acf(data)
 #seasonal_plot(data)
 
 plt.legend()
