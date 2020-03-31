@@ -21,7 +21,6 @@ def parseArgsLoc():
   return marketID, marketDataPath, tweetDataPath, plotType, epochRange, thin, filename
 
 
-
 def save_marketdata( marketDataPath,epochRange,marketID, thin, filename, tweetDataPath):
   marketdata, marketName = loadMarketForPlot('yes', marketDataPath, epochRange, marketID)
 
@@ -40,6 +39,7 @@ def save_marketdata( marketDataPath,epochRange,marketID, thin, filename, tweetDa
   marketdata.index.name = 'i'
   marketdata.to_csv(filename)#,index=False)
 
+# passed to df.apply for adding tweets
 def f(row, interval,tweetTimes):
   unix_time = row['unix']
   print('a')
