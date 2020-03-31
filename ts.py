@@ -4,7 +4,7 @@ from scipy.stats import norm
 import statsmodels.api as sm
 from statsmodels.tsa.api import ExponentialSmoothing, SimpleExpSmoothing, Holt
 import matplotlib.pyplot as plt
-from ts_util import tweets_to_bins, plot_acf, plot_forecast, plot, seasonal_plot, process_forecast
+from ts_util import tweets_to_bins, plot_acf, plot_forecast, plot, seasonal_plot, process_forecast,n_step_forecast_eval, forecast_eval
 
 p=4
 q=4
@@ -114,13 +114,15 @@ n = len(data)
 train_data = data[:n - 10]
 test_data = data[n - 10:]
 
-mean, low, high = ses(data,10)
-plot_forecast(data, mean, low,high,label='ses')
+#mean, low, high = ses(data,10)
+#plot_forecast(data, mean, low,high,label='ses')
 
-mean, low, high = sarimax(data,10,.05,p,q,P,Q)
-plot_forecast(data, mean, low,high,label='sarimax')
+#mean, low, high = sarimax(data,10,.05,p,q,P,Q)
+#plot_forecast(data, mean, low,high,label='sarimax')
 #plot_acf(data)
 #seasonal_plot(data)
+
+n_step_forecast_eval(data, 40, sarimax, (data, 1, .05, p,q,P,Q))
 
 plt.legend()
 plt.show()

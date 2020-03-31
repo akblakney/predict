@@ -119,26 +119,39 @@ def seasonal_plot(data,label='',period=7):
         day = days[i]
         plt.plot(day,label=label+' day ' + str(i))
 
-def forecast_eval(data, test_index, predicted):
-    train_data = data[:test_index]
-    test_data = data[test_index:]
-
+# given actual and forecasted data, return MSE, MAE
+def forecast_eval(actual, predicted):
+    assert len(actual) == len(predicted)
+    n = len(actual)
     # compute MSE, MAE
     mse = 0
     mae = 0
     n = len(predicted)
     for i in range(n):
-        mse += (predicted[i] - test_data[i]) ** 2
-        mae += abs(predicted[i] - test_data[i])
+        mse += (predicted[i] - actual[i]) ** 2
+        mae += abs(predicted[i] - actual[i])
     mse /= n
     mae /= n
 
-    # compute mean absolute error
+    return mse, mae
+
+# evaluates n step forecast, defaults to n = 1
+def n_step_forecast_eval(data, test_index, forecast_method, positional_arguments=None,n=1):
+    
+    N = len(data)
+    index = test_index
+    mse = 0
     mae = 0
-    for i in range
-    # 
-
-
+    while index < N - 1:
+        train_data = data[:index]
+        if positional_arguments is None:
+            mean, _,_ = forecast_method(train_data,n)
+        else:
+            mean,_,_ = forecast_method(*positional_arguments)
+        se, ae = forecast_eval([data[index + 1]], mean)
+        mse += se
+        mae += ae
+    return mse, mae
 
 
 #print(tweets_to_bins('twitterdata/realdonaldtrump-1585605330', 43200, start_index=10))
