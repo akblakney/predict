@@ -4,14 +4,17 @@ from scipy.stats import norm
 import statsmodels.api as sm
 from statsmodels.tsa.api import ExponentialSmoothing, SimpleExpSmoothing, Holt
 import matplotlib.pyplot as plt
-from ts_util import tweets_to_bins, plot_acf, plot_forecast, plot, seasonal_plot, process_forecast,n_step_forecast_eval, forecast_eval
+from ts_util import tweets_to_bins, plot_acf, plot_forecast, plot, seasonal_plot, process_forecast,n_step_forecast_eval, forecast_eval, plot_ma, get_basic_statistics
 
 p=4
 q=4
 P=4
 Q=4
 
-data = [35,35,28,16,48,21,18,    # wed 11/20
+data = [24,47,34,30,39,27,42,    # wed 10/30
+        17,18,9,82,21,28,19, # wed 11/6
+        49,30,37,25,50,15,43,    # wed 11/13
+        35,35,28,16,48,21,18,    # wed 11/20
         9,7,1,1,3,36,34,    # wed 11/27 <-- is off?
         41,16,48,20,105,23,39,    # wed 12/4
         77,123,23,25,27,57,21,        # wed 12/11
@@ -29,7 +32,7 @@ data = [35,35,28,16,48,21,18,    # wed 11/20
         40,31,25,15,4,35,34,
         24,47,26,24,27,29,47,
         20,13,58,21,82,43,37,
-        31,9,32,27,31]#,44,33]
+        31,9,32,27,31,15,26]#,44,33]
 
 
 
@@ -110,11 +113,32 @@ def ses(data, steps):
 
     return fcast, None, None#process_forecast(fcast)
 
+def ses_flat(data, steps):
+    fit = SimpleExpSmoothing(data).fit()
+    fcast = fit.forecast(steps)
+
+    return fcast[0] * np.ones(steps), None, None
+
+def naive_mean(data, steps):
+    return np.mean(data)*np.ones(steps), None, None
+
+def bouncy_forecast(data, steps, thresh=.25):
+    assert steps == 1
+    ql = np.quantile(data, thresh)
+    qh = np.quantile(data, 1 - thresh)
+    mean = np.mean(data)
+
+    if data[-1] > qh:
+        return [ql], None, None
+    if data[-1] < ql:
+        return [qh], None, None
+    return [mean], None, None
+
 n = len(data)
 train_data = data[:n - 10]
 test_data = data[n - 10:]
 
-#mean, low, high = ses(data,10)
+#mean, low, high = sarimax(train_data,10, .05,p,q,P,Q)
 #plot_forecast(data, mean, low,high,label='ses')
 
 #mean, low, high = sarimax(data,10,.05,p,q,P,Q)
@@ -122,7 +146,32 @@ test_data = data[n - 10:]
 #plot_acf(data)
 #seasonal_plot(data)
 
-n_step_forecast_eval(data, 40, sarimax, (data, 1, .05, p,q,P,Q))
+# steps = 1
+test_index = len(data) - 14
+#mse, mae = n_step_forecast_eval(data, test_index, sarimax, (1, .05, p,q,P,Q),label='sarimax')
+#print('mse sarimax: ' + str(mse))
+#print('mae sarmimax: ' + str(mae))
+
+# mse, mae = n_step_forecast_eval(data, test_index, ses,label='ses')
+# print('mse ses: ' + str(mse))
+# print('mae ses: ' + str(mae))
+
+# mse, mae = n_step_forecast_eval(data, test_index, naive_mean,label='naive')
+# print('mse naive: ' + str(mse))
+# print('mae naive: ' + str(mae))
+
+# mse, mae = n_step_forecast_eval(data, test_index, bouncy_forecast,(1,.1),label='bouncy')
+# print('mse bouncy: ' + str(mse))
+# print('mae bouncy: ' + str(mae))
+
+
+plot(np.diff(data))
+
+#plot_ma(data, 9)
+#plot_ma(data, 15)
+#plot_ma(data, 25)
+
+
 
 plt.legend()
 plt.show()

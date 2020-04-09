@@ -49,6 +49,16 @@ def process_forecast(fcast,alpha=.05):
 
     return mean, low_ci, high_ci
 
+def moving_average(a, n=3):
+    ret = np.cumsum(a, dtype=float)
+    ret[n:] = ret[n:] - ret[:-n]
+    return ret[n - 1:] / n
+    #return np.concatenate((np.zeros(n//2), ret[n-1:]/n))
+
+def plot_ma(data, k):
+    plot(moving_average(data,n=k),label='k=' + str(k))
+    
+
 # returns p,q,P,Q with lowest AIC
 def grid_search():
     min_aic = 1000000000
@@ -71,9 +81,13 @@ def grid_search():
     return (p,q,P,Q)
 
 def plot(data,label=''):
+    if label is None:
+        label = ''
     plt.plot(data,label=label + ' data')
 
 def plot_forecast(data, mean, low_ci, high_ci, label=''):
+    if label is None:
+        label = ''
     n = len(data)
     mean = np.concatenate((np.zeros(n), mean))
 
@@ -136,22 +150,32 @@ def forecast_eval(actual, predicted):
     return mse, mae
 
 # evaluates n step forecast, defaults to n = 1
-def n_step_forecast_eval(data, test_index, forecast_method, positional_arguments=None,n=1):
-    
+def n_step_forecast_eval(data, test_index, forecast_method, positional_arguments=None,n=1,label=None):
+    if label is None:
+        label = ''
     N = len(data)
     index = test_index
     mse = 0
     mae = 0
+    predicted = []
+    count = 0
     while index < N - 1:
         train_data = data[:index]
         if positional_arguments is None:
             mean, _,_ = forecast_method(train_data,n)
         else:
-            mean,_,_ = forecast_method(*positional_arguments)
+            mean,_,_ = forecast_method(train_data,*positional_arguments)
         se, ae = forecast_eval([data[index + 1]], mean)
+        predicted.append(mean[0])
         mse += se
         mae += ae
+        index += 1
+        count += 1
+    mse /= count
+    mae /= count
+    print('predicted her')
+    print(predicted)
+    #plot_forecast(data, predicted, None, None, None)
+    plt.plot(data,label=label + ' data')
+    plt.plot(np.concatenate((np.zeros(test_index), predicted)),label=label + ' predicted')
     return mse, mae
-
-
-#print(tweets_to_bins('twitterdata/realdonaldtrump-1585605330', 43200, start_index=10))
