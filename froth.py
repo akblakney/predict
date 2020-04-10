@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import copy
 import random
 
+res = 15
+
 tweets = [24,47,34,30,39,27,42,    # wed 10/30
         17,18,9,82,21,28,19, # wed 11/6
         49,30,37,25,50,15,43,    # wed 11/13
@@ -26,44 +28,52 @@ tweets = [24,47,34,30,39,27,42,    # wed 10/30
         20,13,58,21,82,43,37,   # 3/18
         31,9,32,27,31,15,26,#]#,
         5,19,11,70,23,24,14,    # wed 4/1
-        21,10]# wed 4/8
+        21,res]# wed 4/8
 
-def one_step_sim_equal(data,k):
-    index = random.randint(1,len(data))
-    return data[-index]
-
-
-# n gives number of steps to look back
-# alpha gives intensity parameter
-def one_step_sim(data, k, alpha=1):
-    # normalizing constant
-    c = sum([np.exp(-(alpha * i)) for i in range(1, k)])
-    u = np.random.random()
-
-    # set probability vector (cdf)
-    p = [0]
-    for i in range(1, k):
-        p.append(sum([np.exp(-(alpha * j)) for j in range(1,i + 1)]) / c)
+# sample an element from data with probabilities
+# given by probability vector p
+def sample(data, p):
+    assert len(data) == len(p)
+    i = len(p) - 1
     #print(p)
-    # choose data[-i] with probability p_i
-
-    # choose according to probability distribution
-    i = 0
+    u = np.random.random()
     while u > p[i]:
-        i += 1
-    return data[-i]
+        i -= 1
+    return data[i]
 
-def one_step_sim_gaussian(data,k,alpha=1,sigma=5):
-    return one_step_sim(data,k,alpha=alpha) + np.random.normal(0,sigma)
+# generates exponentially decaying probability distribution
+# according to shape parameter alpha
+# (for decaying probabilities use negative indexing)
+# n is the length of data / length of distribution
+def exp_decay_generator(n, alpha=.5):
+    c = sum([np.exp(-(alpha * i)) for i in range(1, n+1)])
+    p = []
+    for i in range(1, n + 1):
+        p.insert(0, sum([np.exp(-(alpha * j)) for j in range(1,i + 1)]) / c)
+    
+    return p
 
-# n step simulation
-# k is number of steps to consider looking back
-# alpha is intensity parameter
-def n_step_sim(data, n, k, alpha=.5):
-    data2 = copy.copy(data)
-    for _ in range(n):
-        data2.append(one_step_sim(data2,k,alpha=alpha))
-    return data2[-n:]
+def uniform_generator(n):
+    ret = (1 / n) * np.ones(n)
+    ret = np.cumsum(ret)
+    return np.flip(ret)
+
+
+# simulates n steps ahead of data
+# generates one step at a time according prob. dist generated
+# by distributions in dists
+def n_step_sim(data, n, dists):
+    temp_data = copy.copy(data)
+    pred = []
+    
+    for i in range(n):
+        p = dists[i]
+        predicted = sample(temp_data, p)
+        temp_data.append(predicted)
+        pred.append(predicted)
+        #print(predicted)
+    #print(pred)
+    return pred
 
 # given list of len 8 which gives the lower bound for brackets 2 - 9, return
 # appropriate bins object for numpy.hist
@@ -75,26 +85,21 @@ def bins_from_bracket_list(bracket_list):
 
 # return the empircal probability distribution of number of tweets
 # in the next n days, with tweet counts (hist endpoints) given in bins
-def emperical_probability_dist(data, n, alpha, bins, iters = 1000):
-    no_bins = len(bins) - 1
+# dist generator gives generation of distributions
+def emperical_probability_dist(data, n, dist_generator, positional_arguments, bins, iters = 1000):
     counts = []
+    dists = []
+    for i in range(n):
+        if positional_arguments is None:
+            dists.append(dist_generator(len(data) + i))
+        else:
+            dists.append(dist_generator(len(data) + i, positional_arguments))
     for _ in range(iters):
         #counts += n_step_sim(data, n, len(data), alpha=alpha)
-        counts.append(sum(n_step_sim(data, n, len(data), alpha=alpha)))
+        counts.append(sum(n_step_sim(data, n, dists)))
     hist,_ = np.histogram(counts, bins = bins)
     return hist / iters
 
-def n_step_sim_equal_weights(data,n,k):
-    data2 = copy.copy(data)
-    for _ in range(n):
-        data2.append(one_step_sim_equal(data2,k))
-    return data2[-n:]
-
-def n_step_sim_gaussian(data,n,k,alpha=.8):
-    data2 = copy.copy(data)
-    for _ in range(n):
-        data2.append(one_step_sim_gaussian(data2,k,alpha=alpha))
-    return data2[-n:]
 
 def eval_sim(data,test_index,steps, alpha,iters=10000,bins=[100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,260,270,280]):
     
@@ -205,11 +210,11 @@ market_prices.append([.97,.04,.02,.01,.01,.01,.01,.01,.01])
 #     print(market[i])
 
 bracket_list = [140,150,160,170,180,190,200,210]
-alpha = 1.1
-iters = 1000
+alpha = 1
+iters = 10000
 n = 5
 bins = bins_from_bracket_list(bracket_list)
-bins = [b - (21+10) for b in bins]
+bins = [b - (21+res) for b in bins]
 
 # for res in range(20,38,3):
 #     for alpha in np.linspace(.1,.3,3):
@@ -222,8 +227,10 @@ bins = [b - (21+10) for b in bins]
 #         print('res = ' + str(res))
 #         print(pred)
 #         print('\n')
-for alpha in np.linspace(.07,.2,5):
-    pred = emperical_probability_dist(tweets,n,alpha,bins=bins,iters=iters)
+#for alpha in np.linspace(.07,.2,5):
+for alpha in [.07,.09,.11,.13,.15]:
+  #  pred = emperical_probability_dist(tweets,n,exp_decay_generator,(alpha),bins=bins,iters=iters)
+    pred = emperical_probability_dist(tweets,n,uniform_generator,None,bins=bins,iters=iters)
     print('predicted distribution, for n=' + str(n) + ' steps forward and alpha=' + str(alpha) + ':')
     print(pred)
 
