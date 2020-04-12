@@ -20,12 +20,11 @@ def tweets_to_bins(tweetDataPath, bin_len, start_index=0):
 
     # split into bins
     last_time = tweetTimes[-1]
-    print('last time', last_time)
     first_time = tweetTimes[start_index]
-    print('first time',first_time)
+
     #bin_len = (last_time - first_time) // bins
     bins = (last_time - first_time) // bin_len
-    print('bin len', bin_len)
+
     bins_index = 0
     timestamp_index = start_index
     data = []

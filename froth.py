@@ -5,7 +5,7 @@ import random
 
 res = 15
 
-tweets = [24,47,34,30,39,27,42,    # wed 10/30
+rdt = [24,47,34,30,39,27,42,    # wed 10/30
         17,18,9,82,21,28,19, # wed 11/6
         49,30,37,25,50,15,43,    # wed 11/13
         35,35,28,16,48,21,18,    # wed 11/20
@@ -28,7 +28,11 @@ tweets = [24,47,34,30,39,27,42,    # wed 10/30
         20,13,58,21,82,43,37,   # 3/18
         31,9,32,27,31,15,26,#]#,
         5,19,11,70,23,24,14,    # wed 4/1
-        21,res]# wed 4/8
+        21,10,78]# wed 4/8
+
+potus = [
+    25,4
+]
 
 # sample an element from data with probabilities
 # given by probability vector p
@@ -72,7 +76,6 @@ def n_step_sim(data, n, dists):
         temp_data.append(predicted)
         pred.append(predicted)
         #print(predicted)
-    #print(pred)
     return pred
 
 # given list of len 8 which gives the lower bound for brackets 2 - 9, return
@@ -214,26 +217,14 @@ alpha = 1
 iters = 10000
 n = 5
 bins = bins_from_bracket_list(bracket_list)
-bins = [b - (21+res) for b in bins]
+bins = [b - (21+10+78) for b in bins]
 
-# for res in range(20,38,3):
-#     for alpha in np.linspace(.1,.3,3):
-#         data = copy.copy(tweets)
-#         data.append(res)
-#         bins = bins_from_bracket_list(bracket_list)
-#         bins = [x - res for x in bins]
-#         pred = emperical_probability_dist(data,n,alpha,bins=bins,iters=iters)
-#         print('alpha = ' + str(alpha))
-#         print('res = ' + str(res))
-#         print(pred)
-#         print('\n')
-#for alpha in np.linspace(.07,.2,5):
-for alpha in [.07,.09,.11,.13,.15]:
-  #  pred = emperical_probability_dist(tweets,n,exp_decay_generator,(alpha),bins=bins,iters=iters)
-    pred = emperical_probability_dist(tweets,n,uniform_generator,None,bins=bins,iters=iters)
+for alpha in [.03,.05,.07,.09,.11,.13,.15]:
+    pred = emperical_probability_dist(rdt,n,exp_decay_generator,(alpha),bins=bins,iters=iters)
+    #pred = emperical_probability_dist(rdt,n,uniform_generator,None,bins=bins,iters=iters)
     print('predicted distribution, for n=' + str(n) + ' steps forward and alpha=' + str(alpha) + ':')
     print(pred)
 
-#plt.hist(pred)
-plt.show()
+# #plt.hist(pred)
+# plt.show()
 
