@@ -30,6 +30,8 @@ rdt = [24,47,34,30,39,27,42,    # wed 10/30
         5,19,11,70,23,24,14,    # wed 4/1
         21,10,78]# wed 4/8
 
+
+
 potus = [
     25,4
 ]
@@ -101,7 +103,7 @@ def emperical_probability_dist(data, n, dist_generator, positional_arguments, bi
         #counts += n_step_sim(data, n, len(data), alpha=alpha)
         counts.append(sum(n_step_sim(data, n, dists)))
     hist,_ = np.histogram(counts, bins = bins)
-    return hist / iters
+    return hist / iters, np.array(counts)
 
 
 def eval_sim(data,test_index,steps, alpha,iters=10000,bins=[100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,260,270,280]):
@@ -206,24 +208,18 @@ market_prices.append([.97,.04,.02,.01,.01,.01,.01,.01,.01])
 # predicted, market = eval_week(data, test_index, market_prices, bracket_list, .05,iters=1000)
 
 
-# for i in range(len(predicted)):
-#     print('predicted:')
-#     print(predicted[i])
-#     print('actual')
-#     print(market[i])
+#bracket_list = [140,150,160,170,180,190,200,210]
+# alpha = 1
+# iters = 10000
+# n = 5
+# bins = bins_from_bracket_list(bracket_list)
+# bins = [b - (21+10+78) for b in bins]
 
-bracket_list = [140,150,160,170,180,190,200,210]
-alpha = 1
-iters = 10000
-n = 5
-bins = bins_from_bracket_list(bracket_list)
-bins = [b - (21+10+78) for b in bins]
-
-for alpha in [.03,.05,.07,.09,.11,.13,.15]:
-    pred = emperical_probability_dist(rdt,n,exp_decay_generator,(alpha),bins=bins,iters=iters)
-    #pred = emperical_probability_dist(rdt,n,uniform_generator,None,bins=bins,iters=iters)
-    print('predicted distribution, for n=' + str(n) + ' steps forward and alpha=' + str(alpha) + ':')
-    print(pred)
+# for alpha in [.03,.05,.07,.09,.11,.13,.15]:
+#     pred = emperical_probability_dist(rdt,n,exp_decay_generator,(alpha),bins=bins,iters=iters)
+#     #pred = emperical_probability_dist(rdt,n,uniform_generator,None,bins=bins,iters=iters)
+#     print('predicted distribution, for n=' + str(n) + ' steps forward and alpha=' + str(alpha) + ':')
+#     print(pred)
 
 # #plt.hist(pred)
 # plt.show()
