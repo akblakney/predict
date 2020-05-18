@@ -1,0 +1,59 @@
+This is BibTeX, Version 0.99d (TeX Live 2017/Debian)
+Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
+The top-level auxiliary file: paper.aux
+The style file: plain.bst
+Database file #1: mybib.bib
+Warning--entry type for "predictit" isn't style-file defined
+--line 1 of file mybib.bib
+Warning--entry type for "def" isn't style-file defined
+--line 6 of file mybib.bib
+Warning--entry type for "trump" isn't style-file defined
+--line 12 of file mybib.bib
+Warning--entry type for "trading" isn't style-file defined
+--line 17 of file mybib.bib
+Warning--to sort, need author or key in def
+Warning--to sort, need author or key in predictit
+Warning--to sort, need author or key in trump
+Warning--to sort, need author or key in trading
+You've used 4 entries,
+            2118 wiz_defined-function locations,
+            508 strings with 4227 characters,
+and the built_in function-call counts, 648 in all, are:
+= -- 56
+> -- 4
+< -- 0
++ -- 4
+- -- 0
+* -- 22
+:= -- 73
+add.period$ -- 8
+call.type$ -- 4
+change.case$ -- 12
+chr.to.int$ -- 0
+cite$ -- 8
+duplicate$ -- 28
+empty$ -- 93
+format.name$ -- 0
+if$ -- 157
+int.to.chr$ -- 0
+int.to.str$ -- 4
+missing$ -- 0
+newline$ -- 19
+num.names$ -- 0
+pop$ -- 44
+preamble$ -- 1
+purify$ -- 8
+quote$ -- 0
+skip$ -- 24
+stack$ -- 0
+substring$ -- 20
+swap$ -- 4
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 16
+warning$ -- 4
+while$ -- 0
+width$ -- 5
+write$ -- 30
+(There were 8 warnings)

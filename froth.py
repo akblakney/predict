@@ -28,7 +28,8 @@ rdt = [24,47,34,30,39,27,42,    # wed 10/30
         20,13,58,21,82,43,37,   # 3/18
         31,9,32,27,31,15,26,#]#,
         5,19,11,70,23,24,14,    # wed 4/1
-        21,10,78]# wed 4/8
+        21,10,78,31,44,16,9,
+        11,8,35]# wed 4/8
 
 
 
@@ -75,9 +76,12 @@ def n_step_sim(data, n, dists):
     for i in range(n):
         p = dists[i]
         predicted = sample(temp_data, p)
-        temp_data.append(predicted)
-        pred.append(predicted)
-        #print(predicted)
+        #temp_data.append(predicted)
+        temp_data = np.append(temp_data, predicted)
+        #pred.append(predicted)
+        pred = np.append(pred, predicted)
+        #print(pre)
+        
     return pred
 
 # given list of len 8 which gives the lower bound for brackets 2 - 9, return
@@ -85,7 +89,7 @@ def n_step_sim(data, n, dists):
 def bins_from_bracket_list(bracket_list):
     ret = np.array(bracket_list)
     ret = np.insert(ret, 0, 0)
-    ret = np.append(ret, 1000)
+    ret = np.append(ret, 2000)
     return ret
 
 # return the empircal probability distribution of number of tweets
@@ -175,7 +179,7 @@ data = [24,47,34,30,39,27,42,    # wed 10/30
         142,29,78,71,37,51,36,    # wed 1/22
         29,44,16,56,34,43,29, # wed 1/29      
         36,15,59,72,54,15,47, # wed 2/5
-        17,10,23,45,3,18,37]
+        17,10,23,45,3,18,37]    # wed 
 
 test_index = len(data) - 7
 
