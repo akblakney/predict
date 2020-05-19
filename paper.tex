@@ -107,31 +107,29 @@ Note that we may interpret these market prices probabilistically. For example, c
     \label{market_graphic}
 \end{figure}
 
-\section{Problem Approach}
+\section{Problem Formulation}
 Recall that our goal is to estimate the probabilities $p_1,...,p_n$ of each bracket resolving as the winning bracket. More specifically,
 we wish to predict the probability distribution of the number of tweets posted through the end of one week. To do so,
-we model the history of tweet counts as outcomes of random variables drawn from some distribution $f$, and use the observed
-values to estimate this distribution.
+we model the history of tweet counts as outcomes of random variables, and use the observed
+values to estimate the next random variable in the sequence.
 
-Consider a continuous time interval of length $L$ partitioned into $T$ sub-intervals
-$\tau_1,...,\tau_T$ each of length $l$. Then we model the number of tweets during each of these intervals as a random variable $X$, with,
+Consider a continuous time interval of length $L$ partitioned into $N$ sub-intervals
+$\tau_1,...,\tau_N$ each of length $l$ (in our case, $L$ is one week). Then we model the number of tweets during each of these intervals
+as a random variable $X \in \mathbb{R}^N$, with,
 \begin{align*}
 \begin{pmatrix}
-    X_1\\ \vdots \\X_n
-\end{pmatrix} = 
+    X_1\\ \vdots \\X_N
+\end{pmatrix}  &= 
 \begin{pmatrix}
     \text{number of tweets during } \tau_1
     \\ \vdots \\
-    \text{number of tweets during } \tau_n
+    \text{number of tweets during } \tau_N
 \end{pmatrix}.
 \end{align*}
-Thus, we assume that $X \sim f$ for some distribution $f$. Further we assume that 
-Thus we assume that the number of tweets a user posts throughout a week follows some constant
-distribution, and we attempt to estimate this distribution through various techniques.
+Thus $\sum_{i=1}^N X_i$ gives the tweet count for the week associated with $X$.
 
-Given a collection of random variables $X_1,...,X_T$ representing tweet counts during a selected time range, our goal is to predict the distribution
-of future tweet counts. That is, we aim to estimate the distribution
-of $\sum_{i=1}^m X_{T + i}$ for some $m$, with $\sum_{i=1}^m \hat{X}_{T + i}$, where $\hat{X}_i \sim \hat{f}$ for some 
+Given a collection of random variables $X^{(1)},...,X^{(W)}$ representing tweet counts through $W$ weeks, our goal is to estimate
+the distribution of $\sum_{i=1}^n X_i^{(W+1)}$ which gives the number of tweets during the next week.
 %\begin{align*}
 
 %\end{align*}

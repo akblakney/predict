@@ -72,22 +72,24 @@ P = transform(pm)
 bracket_list = [190,200,210,220,230,240,250,260]
 #bracket_list = [150,160,170,180,190,200,210,220]
 bins = bins_from_bracket_list(bracket_list)
-iters = 10000
-picount = 191
+iters = 50000
+picount = 205
 bins = [x - picount for x in bins]
 
 print('picout: ' + str(picount))
 
-for alpha in [.001, .01,.05,.2,]:
-    for res in [0,5,10,15,20,25,30,35,40]:
+for alpha in [.01,.05,.2,]:
+    for res in [0,5]:
         temp_bins = copy.copy(bins)
         temp_bins = [x - res for x in temp_bins]
         am_mat, pm_mat = matFromAP(A, P, alpha, iters)
-        counts = countsFromMat(am_mat, pm_mat, start_am=5, start_pm=6)
+        counts = countsFromMat(am_mat, pm_mat, start_am=6, start_pm=6)
 
         hist,_ = np.histogram(counts, bins=temp_bins)
         total_pred = hist/iters
-        print(total_pred[3:],alpha,res)
+        #print(total_pred[3:],alpha,res)
+        print('---res, alpha = ' + str(res) + ', ' + str(alpha))
+        print('b1 -- b7: ' + str(round(sum(total_pred[:7]),3)) +'                  b8+: ' + str(round(sum(total_pred[7:]),3)))
     print('')
 
 # for alpha in [.001, .01,.05,.2,]:
