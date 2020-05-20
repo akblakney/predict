@@ -5,12 +5,14 @@
 \usepackage{authblk}
 \usepackage{listings}
 \usepackage{amsfonts}
+\usepackage{bbm}
 \newtheorem*{remark}{Remark}
 \newtheorem{definition}{Definition}
+\DeclareMathOperator{\Pro}{\mathbb{P}}
 
 \begin{document}
 
-\title{Predicting Donald Trump's Tweets}
+\title{Predicting Donald Trump's Tweet Frequency with Monte Carlo Simulation}
 \author[1]{Adam Blakney}%\thanks{Email: akblakney@gmail.com}}
 \date{}%21 Januari 2010\\\small{(Edisi Revisi : 3 Januari 2019)}}
 \maketitle
@@ -18,7 +20,7 @@
 \begin{abstract}
 In this paper we apply several statistical learning, modeling,
 and forecasting techniques to the problem of predicting the number of tweets Donald Trump will post in
-a certain amount of time. We tailor our approach to the constraings of PredictIt's Tweet markets.
+a certain amount of time. We tailor our approach to the constraints of PredictIt's Tweet markets.
 \end{abstract}
 
 \section{Introduction}
@@ -36,7 +38,7 @@ to predict future Twitter behavior. In particular, using the past Twitter behavi
 
 \section{PredictIt Tweet Markets}
 In this section we give an brief overview of PredictIt's twitter markets, as well as a basic review of prediction markets.~\cite{def} and ~\cite{trading}
-should be consulted for further information on prediction markets and trading.
+should be consulted for further information on prediction markets and trading on PredictIt.
 
 \subsection{Markets, Brackets and Shares}
 A market is composed of brackets, which specify possible market outcomes. Users interact with the market by buying ``Yes'' or ``No''
@@ -55,23 +57,23 @@ interpreting prediction markets probabilistically. To formalize these concepts w
 \end{definition}
 
 \begin{definition}
-    For each bracket $b_i$, denote the ``Yes'' price by $s_i$, and denote the probability of it resolving as the winning bracket $p_i$.
+    Associated with each bracket $b_i$ is a range of tweets $R_i$ such that, if the tweet count $x$ falls in the range $R_i$ at the market closure time,
+    bracket $b_i$ resolves as the winning bracket. Note that the sets $R_1,...,R_n$ must be disjoint, as exactly one bracket will resolve as the winning bracket at market closure. Further, denote the ``Yes'' price of bracket $b_i$ by $s_i$, and denote the probability of it resolving as the winning bracket $p_i$.
     (Consequently, the probability of it resolving as a losing bracket is $1 - p_i$).
 \end{definition}
 Clearly, the probabilities $p_1,...,p_n$ are unkown: otherwise, assuming a rational market, the share prices $s_1,...,s_n$ would converge to them
 and the market could not be exploited.
-We now consider the impact of buying ``Yes'' or ``No'' shares in a market.
-\begin{definition}
-    Define $w_i$ to be the expected profit after buying one ``Yes'' share in bracket i and $\bar{w}_i$ to be the expccted profit after
-    buying one ``No'' share in bracket i. Then,
+We now consider the impact of buying ``Yes'' or ``No'' shares in a market, and note the following.
+\begin{remark}
+    The expected profits from buying one ``Yes'' or ``No'' shares in bracket $i$ are
     \begin{align*}
-        w_i = .9p_i - s_i,
+        \mathbb{E}(\text{profit}) =
+        \begin{cases}
+            .9p_i - s_i, & \text{when buying a ``Yes'' share} \\
+            .9(1-p_i) - (1-s_i), &\text{when buying a ``No'' share}
+        \end{cases},
     \end{align*}
-    \noindent and,
-    \begin{align*}
-        \bar{w}_i = .9(1-p_i) - (1-s_i),
-    \end{align*}
-\end{definition}
+\end{remark}
 \noindent where the factor of $.9$ arises because PredictIt takes $10\%$ of profits.
 Thus we note the following:
 \begin{remark}
@@ -86,7 +88,7 @@ $b_i$ when,
 \end{align*}
 \noindent respectively.
 \end{remark}
-Thus, our goal is to estimate the probabilities $p_1,...,p_n$ reliably.
+Thus, our goal is to estimate the probabilities $p_1,...,p_n$ reliably so that we may determine when a buy is profitable.
 
 \subsection{\lstinline{@realDonaldTrump} Market Example}
 For each selected Twitter user,
@@ -108,13 +110,14 @@ Note that we may interpret these market prices probabilistically. For example, c
 \end{figure}
 
 \section{Problem Formulation}
-Recall that our goal is to estimate the probabilities $p_1,...,p_n$ of each bracket resolving as the winning bracket. More specifically,
-we wish to predict the probability distribution of the number of tweets posted through the end of one week. To do so,
-we model the history of tweet counts as outcomes of random variables, and use the observed
+Recall that our goal is to estimate the probabilities $p_1,...,p_n$ of each bracket resolving as the winning bracket. Because each bracket
+gives a range of tweets to be posted by the end of the week, this entails 
+predicting the probability distribution of the number of tweets posted through the end of one week. To do so,
+we model the history of tweet counts as outcomes of a sequence random variables, and use the observed
 values to estimate the next random variable in the sequence.
 
 Consider a continuous time interval of length $L$ partitioned into $N$ sub-intervals
-$\tau_1,...,\tau_N$ each of length $l$ (in our case, $L$ is one week). Then we model the number of tweets during each of these intervals
+$\tau_1,...,\tau_N$, each of length $l$ (in our case, we use $L=$ one week and $l=$ 12 hours). Then we model the number of tweets during each of these intervals
 as a random variable $X \in \mathbb{R}^N$, with,
 \begin{align*}
 \begin{pmatrix}
@@ -126,23 +129,68 @@ as a random variable $X \in \mathbb{R}^N$, with,
     \text{number of tweets during } \tau_N
 \end{pmatrix}.
 \end{align*}
-Thus $\sum_{i=1}^N X_i$ gives the tweet count for the week associated with $X$.
+And so $\sum_{i=1}^N X_i$ gives the tweet count for the week associated with $X$.
 
-Given a collection of random variables $X^{(1)},...,X^{(W)}$ representing tweet counts through $W$ weeks, our goal is to estimate
+Therefore, given a collection of random variables $X^{(1)},...,X^{(W)}$ representing tweet counts through $W$ weeks, our goal is to estimate
 the distribution of $\sum_{i=1}^n X_i^{(W+1)}$ which gives the number of tweets during the next week.
+Then we obtain estimates for the bracket probabilities $\hat{p}_1,...,\hat{p}_n$
+with
+%\begin{align*}
+$p_i = \Pro_{\hat{F}}(X_i^{(W+1)} \in R_i),$ where $\hat{F}$ is the estimated distribution of $X^{(W+1)}$.
+%\end{align*}
+
+
 %\begin{align*}
 
 %\end{align*}
 
-\subsection{Monte Carlo Simulation}
+\section{Monte Carlo Simulation}
+\subsection{Model Description}
 In this section we attempt to estimate the probabilities $p_1,...,p_n$ via Monte Carlo simulation.
-We assume that the account's behavior is similar during similar times of the week. Thus, given $W$ weeks of data,
-we partition each week into $N$ equal length intervals,
-and track the number of tweets during each of these.
-Consider the $W \times N$ matrix of previous tweet counts
-$X$, where $X_{ij}$ gives the number of tweets during the $j$-th segment of the $i$-th. Given $X$, our goal, then,
-is to estimate the distribution of $\hat{X}_{W+1} :=  (\hat{X}_{W+1,1},...,\hat{X}_{W+1,N})$ which gives the number of tweets during each of the $N$ segments
-of the subsequent week. Then the estimate of the desired distribution is given by, $\sum_{j=1}^N \hat{X}_{W+1, j}$. 
+We assume that the account's behavior is similar during similar times of the week. Thus, given $W$ weeks of data
+$X^{(1)},...,X^{(W)}$, where $X^{(i)} \in \mathbb{R}^N$, we assume the $X^{(i)}$'s are independently and identically distributed according to
+some distribution $F$. We then consider two strategies for estimating $F$:
+\begin{enumerate}
+    \item Given $X^{(1)},...,X^{(W)}$, estimate the distribution of each component of $X^{(W+1)}$ independently with
+    $\hat{F}_{X_i^{(W+1)}}(x) = \frac{1}{W}\sum_{j=1}^W \mathbbm{1}_{\{X_i^{(j)} \leq x\}}$. That is, we take our estimate of the distribution of the $i$-th component of $X$
+    to be the empirical distribution of $X_i^{(1)},...,X_i^{(W)}$.
+    \item Given $X^{(1)},...,X^{(W)}$, estimate the distribution of each component of $X^{(W+1)}$ independently with
+    $\hat{F}_{X_i^{(W+1)}}(x) = w_i\sum_{j=1}^W \mathbbm{1}_{\{X_i^{(j)} \leq x\}}$, where $w_i = ce^{-\alpha(N-i)}$ for some constant $c$. That is, we take our estimate of the distribution of the $i$-th component of $X$
+    to be a weighted empirical distribution of $X_i^{(1)},...,X_i^{(W)}$, where the weights decrease exponentially as we consider older data.
+\end{enumerate}
+Note that both strategies estimate the distribution of each component independently. 
+The first strategy is a standard bootstrap approach; all past observed values are weighted equally to form the prediction of each component $\hat{X}_i^{(W+1)}$.
+The second strategy, however, weights data according to an exponentially decreasing function. This is motivated by the idea that more current data
+should be weighted more heavily, so as to account for long-term trends in the data.
+
+In both strategies we sample many $\tilde{X} \sim \hat{F}$ independnetly from the epmierical distribution as stated. Let
+$\tilde{X}^{(1)},...,\tilde{X}^{(M)}$ denote $M$ random variables sampled independently from $\hat{F}$. Then we estimate the bracket probabilities with,
+\begin{align*}
+    \hat{p}_i &= \frac{1}{M}\sum_{i=1}^M \mathbbm{1}_{\{\tilde{X}^{(i)}  \in R_i\}}.
+\end{align*}
+
+\subsection{Using the Model Throughout the Week}
+Given $W$ weeks of data $X^{(1)},...,X^{(W)}$, we have given two strategies to estimate
+the distribution of the number of tweets during the next week,
+$\sum_{i=1}^N \hat{X}_i$. However, we might consider updating our estimate
+throughout the week. As we collect tweet data during the week, the first
+components of our vector $X^{(W+1)}$ begin to be known. Once we have observed
+through $\tau_s$ during the given week, we may take
+$\hat{X}_i^{(W+1)}$ to be the number of tweets during $\tau_i$ for $i \leq s$,
+and estimate the rest as described above.
+
+\subsection{Model Evaluation}
+When evaluating our model, we are interested in how accurate we estimate
+the probabilities $\hat{p}_1,...,\hat{p}_n$. Further, we wish to evaluate
+our model throughout the week, namely after each interval $\tau_i$.
+To measure model accuracy, we use cross-entropy loss. Given
+$W$ weeks of data $X^{(1)},...,X^{(W)}$ and an additional
+$s$ data points during the week $X_1^{(W+1)},...,X_s^{(W+1)}$ representing
+tweet counts during $\tau_1$ through $\tau_s$, we may measure the
+
+\begin{align*}
+H()
+\end{align*}
 
 \bibliography{mybib} 
 \bibliographystyle{plain}

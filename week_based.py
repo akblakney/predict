@@ -11,7 +11,8 @@ am = [
     5,2,11,33,11,8,9,   # 4/15
     12,16,15,23,2,4,11, # 4/22
     13,55,12,16,19,6,17,
-    6,1,5,9,75,24,32  # 4/29
+    6,1,5,9,75,24,32,  # 5/6
+    12,11,7,50,7,24,6   # 
 ]
 
 pm = [
@@ -23,7 +24,8 @@ pm = [
     6,6,24,22,20,18,9,
     3,17,15,5,42,13,6,
     14,12,18,24,12,4,19,
-    3,9,7,18,49,30,16  # 4/15
+    3,9,7,18,49,30,16,  # 5/6
+    4,35,14,8,31,15,0
 ]
 
 # given: list of daily counts
@@ -67,29 +69,51 @@ def countsFromMat(am_mat, pm_mat,start_am=0, start_pm=0):
                 counts[-1] += pm_mat[day][iter_no]
     return counts
 
+# p is a vector of probabilities
+# i gives the outcome of the event
+# returns the log likelihood of i occuring given p
+def logLikelihood(p, i):
+    return np.log(p[i])
+
+# which bin is x in?
+def findBin(bins,x):
+    for i in range(len(bins) - 1):
+        if x > bins[i] and x < bins[i + 1] :
+            return i
+    return len(bins) - 1
+
+# train gives the training data
+# test gives a list of len
+def evalSim(train_am, train_pm, test_am, test_pm):
+    for i in range(6):
+        am_start = i
+        pm_start = i
+        counts = countsFromMat(train_am, train_pm, start_am = am_start, start_pm = pm_start)
+
+
 A = transform(am)
 P = transform(pm)
-bracket_list = [190,200,210,220,230,240,250,260]
+bracket_list = [210,220,230,240,250,260,270,280]
 #bracket_list = [150,160,170,180,190,200,210,220]
 bins = bins_from_bracket_list(bracket_list)
-iters = 50000
-picount = 205
+iters = 10000
+picount = 0
 bins = [x - picount for x in bins]
 
 print('picout: ' + str(picount))
 
-for alpha in [.01,.05,.2,]:
-    for res in [0,5]:
+for alpha in [.001,.01,.05,.2,]:
+    for res in [0]:
         temp_bins = copy.copy(bins)
         temp_bins = [x - res for x in temp_bins]
         am_mat, pm_mat = matFromAP(A, P, alpha, iters)
-        counts = countsFromMat(am_mat, pm_mat, start_am=6, start_pm=6)
+        counts = countsFromMat(am_mat, pm_mat, start_am=0, start_pm=0)
 
         hist,_ = np.histogram(counts, bins=temp_bins)
         total_pred = hist/iters
-        #print(total_pred[3:],alpha,res)
-        print('---res, alpha = ' + str(res) + ', ' + str(alpha))
-        print('b1 -- b7: ' + str(round(sum(total_pred[:7]),3)) +'                  b8+: ' + str(round(sum(total_pred[7:]),3)))
+        print(total_pred,alpha,res)
+        #print('---res, alpha = ' + str(res) + ', ' + str(alpha))
+        #print('b1 -- b7: ' + str(round(sum(total_pred[:7]),3)) +'                  b8+: ' + str(round(sum(total_pred[7:]),3)))
     print('')
 
 # for alpha in [.001, .01,.05,.2,]:
